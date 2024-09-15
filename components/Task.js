@@ -1,4 +1,4 @@
-import React,{useEffect,useState} from 'react';
+import React,{useState} from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 
 export default function Task({ task, role, onEdit, onDelete, onComplete }) {

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, FlatList } from 'react-native';
-import { getDatabase, ref, onValue,remove,get,update,set } from 'firebase/database';
+import { View, Text, Button, StyleSheet, FlatList,Platform } from 'react-native';
+import { getDatabase, ref, onValue,remove,get,set,onChildChanged} from 'firebase/database';
 import Task from '../components/Task';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function DashboardScreen({ route, navigation }) {
   var loadTasks;
   const [tasks, setTasks] = useState([]);
-  const { role, userId } = route.params; // role and userId are passed through route params
+  // role and userId are passed through route params
+  const { role, userId } = route.params; 
   const database = getDatabase();
   useFocusEffect(
     React.useCallback(() => {
@@ -22,6 +23,7 @@ export default function DashboardScreen({ route, navigation }) {
   useEffect(() => {
     // Fetch tasks based on user role
      loadTasks = async () => {
+      setTasks([]); 
       let tasksRef;
       tasksRef = ref(database, `/users/${userId}/assignedTasks`);
       
@@ -43,15 +45,26 @@ export default function DashboardScreen({ route, navigation }) {
             });
           });
         } else {
-          setTasks([]); // No tasks available
+          // No tasks available then assign empty array
+          setTasks([]); 
         }
       });
     };
     loadTasks();
+
+    // Listen for task updates (onChildChanged)
+    onChildChanged(ref(database, `/tasks`), (changedSnapshot) => {
+      
+      setTasks([]); 
+      loadTasks();
+      
+    });
+ 
+
   
   }, [role, userId]);
 
-
+  
   const handleAddTask = () => {
     navigation.navigate('AddTask', { role,userId });
   };
@@ -69,19 +82,15 @@ export default function DashboardScreen({ route, navigation }) {
       const promises = [];
       await get(usersRef).then((snapshot) => {
         snapshot.forEach((user) => {
-          console.log('user in for each', user)
           const assignedTasksRef = ref(db, `users/${user.key}/assignedTasks`);
           const assignedTasks = user.val().assignedTasks;
-          console.log('assignedtasks', assignedTasks);
+        
       
           const updatedAssignedTasks = assignedTasks.filter((task) => task!== taskId);
-          console.log('udpaetdassignedtasks', updatedAssignedTasks);
           promises.push(set(assignedTasksRef, updatedAssignedTasks));
         });
       });
       await Promise.all(promises);
-  
-      console.log('Task deleted');
     } catch (error) {
       console.log('Error deleting task:', error);
     }
@@ -98,7 +107,7 @@ export default function DashboardScreen({ route, navigation }) {
   };
 
   const handleCompleteTask = async (taskId) => {
-    console.log('complete taks id',taskId)
+   
     const updatedTasks = tasks.map(task => 
       task.taskId === taskId ? { ...task, completed: true } : task
     );

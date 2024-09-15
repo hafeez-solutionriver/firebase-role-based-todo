@@ -4,6 +4,8 @@ import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { getDatabase, ref, get } from 'firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function LoginScreen({ navigation }) {
+
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
  
@@ -80,7 +82,7 @@ export default function LoginScreen({ navigation }) {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <Button title="Login" onPress={handleLogin} />
+      <Button title="Login" onPress={handleLogin} style={styles.logIn}/>
       <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
         <Text style={styles.link}>Sign up</Text>
       </TouchableOpacity>
@@ -96,6 +98,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 16,
+  },
+  logIn:{
+    backgroundColor:'blue'
   },
   header: {
     fontSize: 24,
